@@ -39,22 +39,43 @@ class InputWindow(QMainWindow): # окно ввода
 
         self.button.clicked.connect(self.on_button_clicked) # создаем сигнал на нажатие кнопки
 
-    def on_button_clicked(self): # меод обработки нажатия кнопки
-        # получаем данные из полей ввода
-        N = int(self.N_input.text())
-        L = int(self.L_input.text())
-        K = int(self.K_input.text())
-        coordinates = self.coordinates_input.text().split(';')
-        s = [(int(x.split(',')[0]), int(x.split(',')[1])) for x in coordinates if x]
-        # создаем объект класса ChessBoard и вызываем метод solve
-        board = ChessBoard(N, L, K, s)
-        first_solution_matrix = board.solve()
-        if first_solution_matrix is not None:
-            self.result_window = ResultWindow(first_solution_matrix)
-        else:
-            self.result_window = ResultWindow("Нет решений")
-        self.result_window.show()
-
+    def on_button_clicked(self): # метод обработки нажатия кнопки
+        try:
+            # получаем данные из полей ввода
+            try:
+                N = int(self.N_input.text())
+                L = int(self.L_input.text())
+                K = int(self.K_input.text())
+                coordinates = self.coordinates_input.text().split(';')
+                s = []
+                for x in coordinates:
+                    if x:
+                        parts = x.split(',')
+                        if len(parts) < 2:
+                            raise ValueError("Ошибка: координаты должны быть в формате x,y")
+                        s.append((int(parts[0]), int(parts[1])))
+            except ValueError:
+                raise ValueError("Ошибка: введены не числовые значения или координаты в неправильном формате")
+            
+            if len(s) != K:
+                raise ValueError("Ошибка: количество введенных координат не совпадает с числом фигур, которые уже поставлены")
+            
+            # проверяем, что если количество фигур равно 0, то координаты не были введены
+            if K == 0 and s:
+                raise ValueError("Ошибка: введены координаты, но количество фигур равно 0")
+            
+            # проверяем, что если количество фигур больше 0, то координаты были введены правильно
+            if K > 0 and not s:
+                raise ValueError("Ошибка: не введены координаты или они введены неправильно")
+            
+            # проверяем, что размер доски не равен 0
+            if N == 0 :
+                raise ValueError("Ошибка: размер доски не может быть равен 0")
+        except ValueError as e:
+            # выводим сообщение об ошибке
+            self.result_window = ResultWindow(str(e))
+            self.result_window.show()
+                
  # окно с шахматной доской
 class ResultWindow(QMainWindow):
     def __init__(self, solutions):

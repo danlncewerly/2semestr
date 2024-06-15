@@ -6,14 +6,30 @@ start=time.time()
 global steps
 s = []  #Создаем пустой список , в который будут добавляться стоящие фигуры.
 def main():
-    with open("input.txt", "r") as file: #Открываем файл Input.txt для чтения
-        N, L, K = map(int, file.readline().split())
-        solutions = set() #множество для решений
-        for i in file.readlines():
-            x, y = map(int, i.split())
-            s.append((x, y))
-    print("Размер доски: ", N,"Нужно поставить фигур: ", L, "Уже стоят фигуры: ", K, "\n","Доска:" )
-    recursion(N,L,solutions,s,0)
+    try:
+        with open("input.txt", "r") as file: #Открываем файл Input.txt для чтения
+            try:
+                N, L, K = map(int, file.readline().split())
+            except ValueError:
+                raise ValueError("Ошибка: введены не числовые значения в первой строке input.txt")
+            
+            solutions = set() #множество для решений
+            s = []
+            for i in file.readlines():
+                parts = i.split()
+                try:
+                    x, y = map(int, parts)
+                    s.append((x, y))
+                except ValueError:
+                    raise ValueError("Ошибка: неправильно введены значения в строке с координатами в input.txt")
+        
+        if len(s) != K:
+            raise ValueError("Ошибка: количество введенных координат не совпадает с числом фигур, которые уже поставлены")
+        
+        print("Размер доски: ", N,"Нужно поставить фигур: ", L, "Уже стоят фигуры: ", K, "\n","Доска:" )
+        recursion(N,L,solutions,s,0)
+    except ValueError as e:
+        print(str(e))
 
 
     if solutions:
