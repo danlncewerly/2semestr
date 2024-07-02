@@ -41,38 +41,30 @@ class InputWindow(QMainWindow): # окно ввода
 
     def on_button_clicked(self): # метод обработки нажатия кнопки
         try:
-            # получаем данные из полей ввода
-            try:
-                N = int(self.N_input.text())
-                L = int(self.L_input.text())
-                K = int(self.K_input.text())
-                coordinates = self.coordinates_input.text().split(';')
-                s = []
-                for x in coordinates:
-                    if x:
-                        parts = x.split(',')
-                        if len(parts) < 2:
-                            raise ValueError("Ошибка: координаты должны быть в формате x,y")
-                        s.append((int(parts[0]), int(parts[1])))
-            except ValueError:
-                raise ValueError("Ошибка: введены не числовые значения или координаты в неправильном формате")
-            
-            if len(s) != K:
-                raise ValueError("Ошибка: количество введенных координат не совпадает с числом фигур, которые уже поставлены")
-            
-            # проверяем, что если количество фигур равно 0, то координаты не были введены
+            N = int(self.N_input.text())
+            if N <= 0:
+                raise ValueError("Ошибка: размер доски должен быть больше 0")
+
+            L = int(self.L_input.text())
+            K = int(self.K_input.text())
+
+            coordinates = self.coordinates_input.text().split(';')
+            s = [(int(x.split(',')[0]), int(x.split(',')[1])) for x in coordinates if x]
+
             if K == 0 and s:
                 raise ValueError("Ошибка: введены координаты, но количество фигур равно 0")
-            
-            # проверяем, что если количество фигур больше 0, то координаты были введены правильно
-            if K > 0 and not s:
-                raise ValueError("Ошибка: не введены координаты или они введены неправильно")
-            
-            # проверяем, что размер доски не равен 0
-            if N == 0 :
-                raise ValueError("Ошибка: размер доски не может быть равен 0")
+            if K > 0 and len(s) != K:
+                raise ValueError("Ошибка: количество введенных координат не совпадает с числом фигур")
+
+            board = ChessBoard(N, L, K, s)
+            first_solution_matrix = board.solve()
+            if first_solution_matrix is not None:
+                self.result_window = ResultWindow(first_solution_matrix)
+            else:
+                self.result_window = ResultWindow("Нет решений")
+            self.result_window.show()
+
         except ValueError as e:
-            # выводим сообщение об ошибке
             self.result_window = ResultWindow(str(e))
             self.result_window.show()
                 
@@ -186,7 +178,7 @@ class ChessBoard:
 
 # класс для хода альфиля
 class Alfil:
-    @staticmethod
+    
     def alfil_steps(x, y):
         steps = {(x-2,y+2), (x-1,y+1),(x+1,y+1), (x+2, y+2),(x-1,y-1), (x-2,y-2),(x+1,y-1), (x+2,y-2),}
         return steps
